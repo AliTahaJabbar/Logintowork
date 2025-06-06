@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ادارة بصمة الدخول والخروج</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e7f1 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--dark-color);
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 0 0 20px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.1)" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,224C672,245,768,267,864,256C960,245,1056,203,1152,176C1248,149,1344,139,1392,133.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') bottom no-repeat;
+            background-size: cover;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+        }
+        
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            border: none;
+            margin-bottom: 25px;
+            transition: transform 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+        }
+        
+        .card-header {
+            background: linear-gradient(to right, var(--secondary-color), #1abc9c);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            font-weight: 600;
+            padding: 15px 20px;
+            position: relative;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            border: none;
+            padding: 10px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border-radius: 50px;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(to right, var(--accent-color), #c0392b);
+            border: none;
+            border-radius: 50px;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .stat-card h3 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin: 10px 0;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .stat-card p {
+            font-size: 1.1rem;
+            margin: 0;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .stat-card .days {
+            background: rgba(0,0,0,0.1);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        
+        .attendance-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        .attendance-table th {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+        }
+        
+        .attendance-table td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .attendance-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .attendance-table tr:hover {
+            background-color: #e3f2fd;
+        }
+        
+        .late {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+        
+        .overtime {
+            color: #27ae60;
+            font-weight: 600;
+        }
+        
+        .holiday {
+            background-color: #fff8e1 !important;
+            color: #ff9800;
+            font-weight: 600;
+        }
+        
+        .footer {
+            background: var(--dark-color);
+            color: white;
+            padding: 25px 0;
+            margin-top: 40px;
+            border-radius: 20px 20px 0 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .footer::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+        }
+        
+        .input-group-text {
+            background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            color: white;
+            border: none;
+        }
+        
+        .form-control:focus {
+            box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+            border-color: var(--secondary-color);
+        }
+        
+        .section-title {
+            position: relative;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            border-bottom: 3px solid var(--secondary-color);
+            display: inline-block;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.5s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: linear-gradient(to right, #2ecc71, #27ae60);
+        }
+        
+        .notification.error {
+            background: linear-gradient(to right, #e74c3c, #c0392b);
+        }
+        
+        .work-info {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .work-info h5 {
+            color: var(--secondary-color);
+            border-bottom: 2px dashed #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .work-info ul {
+            padding-left: 20px;
+        }
+        
+        .work-info li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .summary-card {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .summary-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.12);
+        }
+        
+        .summary-card h4 {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .summary-card .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+        }
+        
+        .summary-card .days {
+            font-size: 1rem;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        .progress-container {
+            margin-top: 15px;
+        }
+        
+        .progress {
+            height: 12px;
+            border-radius: 10px;
+            overflow: visible;
+        }
+        
+        .progress-bar {
+            border-radius: 10px;
+            position: relative;
+            overflow: visible;
+        }
+        
+        .progress-bar::after {
+            content: "";
+            position: absolute;
+            right: 0;
+            top: -3px;
+            height: 18px;
+            width: 18px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(52, 152, 219, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); }
+        }
+        
+        .stats-row {
+            margin-bottom: 15px;
+        }
+        
+        .summary-header {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 15px 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- إشعارات -->
+    <div id="notification" class="notification"></div>
+    
+    <!-- الرأس -->
+    <header class="header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="logo">
+                        <i class="fas fa-user-clock"></i>
+                        <span>نظام إدارة بصمات الدوام</span>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div id="currentDateTime" class="h5 mb-0"></div>
+                    <div class="mt-1">
+                        <span class="badge bg-light text-dark">
+                            <i class="fas fa-calendar-alt me-2"></i>
+                            <span id="hijriDate"></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container my-5">
+        <div class="row">
+            <!-- القسم اليسرى: الإحصائيات وإدخال البيانات -->
+            <div class="col-lg-4">
+                <!-- بطاقات الإحصائيات -->
+                <div class="row stats-row">
+                    <div class="col-md-6 col-lg-12">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #3498db, #2c3e50);">
+                            <i class="fas fa-clock"></i>
+                            <h3 id="totalHours">0</h3>
+                            <p>إجمالي ساعات العمل</p>
+                            <div class="days" id="totalHoursDays">0 يوم</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-12">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h3 id="totalLate">0</h3>
+                            <p>إجمالي التأخير (×4)</p>
+                            <div class="days" id="totalLateDays">0 يوم</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-12">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #2ecc71, #27ae60);">
+                            <i class="fas fa-plus-circle"></i>
+                            <h3 id="totalOvertime">0</h3>
+                            <p>إجمالي الوقت الإضافي</p>
+                            <div class="days" id="totalOvertimeDays">0 يوم</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-12">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
+                            <i class="fas fa-umbrella-beach"></i>
+                            <h3 id="totalHolidays">0</h3>
+                            <p>إجمالي أيام الإجازة</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- معلومات الدوام -->
+                <div class="work-info">
+                    <h5><i class="fas fa-info-circle me-2"></i>معلومات الدوام</h5>
+                    <ul>
+                        <li>وقت بداية الدوام: <strong>2:00 مساءً</strong></li>
+                        <li>وقت نهاية الدوام: <strong>12:00 منتصف الليل</strong></li>
+                        <li>مدة الدوام اليومي: <strong>10 ساعات</strong></li>
+                        <li>يبدأ احتساب التأخير بعد: <strong>2:05 مساءً</strong></li>
+                        <li>احتساب التأخير: <strong>×4 (كل دقيقة ×4)</strong></li>
+                        <li>احتساب الوقت الإضافي بعد: <strong>12:00 منتصف الليل</strong></li>
+                        <li>يوم الإجازة الأسبوعي: <strong id="holidayDay">الاثنين</strong></li>
+                    </ul>
+                </div>
+                
+                <!-- إجمالي أيام العمل -->
+                <div class="card pulse">
+                    <div class="card-header">
+                        <i class="fas fa-calendar-check me-2"></i>إجمالي أيام العمل
+                    </div>
+                    <div class="card-body text-center">
+                        <h1 class="display-4" id="totalWorkDays">0</h1>
+                        <p class="mb-0">يوم عمل خلال الشهر</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- القسم اليمنى: الجدول وإدخال البيانات -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-plus-circle me-2"></i>إضافة سجل حضور جديد</span>
+                    </div>
+                    <div class="card-body">
+                        <form id="attendanceForm">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="date" class="form-label">التاريخ</label>
+                                    <input type="date" class="form-control" id="date" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="timeIn" class="form-label">وقت الدخول</label>
+                                    <input type="time" class="form-control" id="timeIn" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="timeOut" class="form-label">وقت الخروج</label>
+                                    <input type="time" class="form-control" id="timeOut" required>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="isHoliday">
+                                        <label class="form-check-label" for="isHoliday">
+                                            يوم إجازة
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-save me-2"></i>إضافة سجل يوم جديد
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-history me-2"></i>سجلات الحضور</span>
+                        <div>
+                            <select id="monthFilter" class="form-select form-select-sm">
+                                <option value="all">كل الشهور</option>
+                                <!-- سيتم ملئ الخيارات عبر الجافاسكريبت -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="attendance-table">
+                                <thead>
+                                    <tr>
+                                        <th>التاريخ</th>
+                                        <th>وقت الدخول</th>
+                                        <th>وقت الخروج</th>
+                                        <th>ساعات العمل</th>
+                                        <th>التأخير (×4)</th>
+                                        <th>الوقت الإضافي</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="attendanceRecords">
+                                    <!-- سيتم ملئ السجلات عبر الجافاسكريبت -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ملخص الإحصائيات -->
+                <div class="summary-header">
+                    <h4 class="mb-0"><i class="fas fa-chart-bar me-2"></i>ملخص الإحصائيات الشهرية بالأيام</h4>
+                </div>
+                
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <h4>أيام العمل الفعلية</h4>
+                        <div class="value" id="workDaysValue">0</div>
+                        <div class="days">يوم عمل</div>
+                    </div>
+                    
+                    <div class="summary-card">
+                        <h4>إجمالي التأخير</h4>
+                        <div class="value" id="lateDaysValue">0</div>
+                        <div class="days">يوم (مكافيء)</div>
+                        <div class="progress-container">
+                            <div class="progress">
+                                <div class="progress-bar bg-danger" id="lateProgress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-card">
+                        <h4>إجمالي الوقت الإضافي</h4>
+                        <div class="value" id="overtimeDaysValue">0</div>
+                        <div class="days">يوم (مكافيء)</div>
+                        <div class="progress-container">
+                            <div class="progress">
+                                <div class="progress-bar bg-success" id="overtimeProgress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-card">
+                        <h4>نسبة الإجازات</h4>
+                        <div class="value" id="holidaysPercent">0%</div>
+                        <div class="days" id="holidaysDays">0 يوم</div>
+                        <div class="progress-container">
+                            <div class="progress">
+                                <div class="progress-bar bg-warning" id="holidaysProgress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- الفوتر -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>نظام إدارة بصمة الدخول والخروج</h5>
+                    <p>نظام ادارة سجلات حضور وانصراف الموظف علي طه</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>جميع الحقوق محفوطة | علي طه | &copy; <span id="currentYear"></span></p>
+                    <div class="mt-2">
+                        <button class="btn btn-sm btn-outline-light me-2">
+                            <i class="fas fa-download me-1"></i>تصدير البيانات
+                        </button>
+                        <button class="btn btn-sm btn-outline-light">
+                            <i class="fas fa-print me-1"></i>طباعة التقرير
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // كائن لتخزين السجلات
+        let attendanceRecords = JSON.parse(localStorage.getItem('attendanceRecords')) || [];
+        
+        // عناصر DOM
+        const attendanceForm = document.getElementById('attendanceForm');
+        const attendanceRecordsBody = document.getElementById('attendanceRecords');
+        const totalHoursElement = document.getElementById('totalHours');
+        const totalLateElement = document.getElementById('totalLate');
+        const totalOvertimeElement = document.getElementById('totalOvertime');
+        const totalHolidaysElement = document.getElementById('totalHolidays');
+        const monthFilter = document.getElementById('monthFilter');
+        const notification = document.getElementById('notification');
+        const currentDateTimeElement = document.getElementById('currentDateTime');
+        const hijriDateElement = document.getElementById('hijriDate');
+        const currentYearElement = document.getElementById('currentYear');
+        const holidayDayElement = document.getElementById('holidayDay');
+        const totalWorkDaysElement = document.getElementById('totalWorkDays');
+        
+        // عناصر الأيام المكافئة
+        const totalHoursDaysElement = document.getElementById('totalHoursDays');
+        const totalLateDaysElement = document.getElementById('totalLateDays');
+        const totalOvertimeDaysElement = document.getElementById('totalOvertimeDays');
+        const workDaysValueElement = document.getElementById('workDaysValue');
+        const lateDaysValueElement = document.getElementById('lateDaysValue');
+        const overtimeDaysValueElement = document.getElementById('overtimeDaysValue');
+        const holidaysPercentElement = document.getElementById('holidaysPercent');
+        const holidaysDaysElement = document.getElementById('holidaysDays');
+        const lateProgressElement = document.getElementById('lateProgress');
+        const overtimeProgressElement = document.getElementById('overtimeProgress');
+        const holidaysProgressElement = document.getElementById('holidaysProgress');
+        
+        // أوقات الدوام
+        const WORK_START = { hours: 14, minutes: 0 }; // 2:00 PM
+        const WORK_END = { hours: 0, minutes: 0 };   // 12:00 AM
+        const LATE_THRESHOLD = 5; // 5 دقائق تأخير مسموحة
+        const WORK_HOURS_PER_DAY = 10; // 10 ساعات عمل في اليوم
+        
+        // تهيئة التاريخ الحالي
+        function initializeDate() {
+            const now = new Date();
+            const formattedDate = now.toLocaleDateString('ar-EG', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            currentDateTimeElement.textContent = formattedDate;
+            
+            // التاريخ الهجري التقريبي
+            const hijriMonths = ['محرم', 'صفر', 'ربيع الأول', 'ربيع الآخر', 'جمادى الأولى', 'جمادى الآخرة', 'رجب', 'شعبان', 'رمضان', 'شوال', 'ذو القعدة', 'ذو الحجة'];
+            const hijriYear = Math.floor((now.getFullYear() - 622) * 0.97);
+            const hijriMonth = hijriMonths[now.getMonth()];
+            const hijriDay = Math.floor(now.getDate() * 0.97);
+            
+            hijriDateElement.textContent = `${hijriDay} ${hijriMonth} ${hijriYear} هـ`;
+            
+            // سنة حقوق النشر
+            currentYearElement.textContent = now.getFullYear();
+            
+            // تعيين التاريخ الحالي كقيمة افتراضية
+            document.getElementById('date').valueAsDate = now;
+        }
+        
+        // إظهار الإشعارات
+        function showNotification(message, isSuccess = true) {
+            notification.textContent = message;
+            notification.className = isSuccess ? 'notification success' : 'notification error';
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // حساب وقت التأخير
+        function calculateLateMinutes(timeIn) {
+            const [hours, minutes] = timeIn.split(':').map(Number);
+            
+            // حساب دقائق التأخير بعد 2:05 PM
+            let lateMinutes = 0;
+            
+            // التأخير يبدأ بعد 2:05 PM
+            if (hours === WORK_START.hours && minutes > (WORK_START.minutes + LATE_THRESHOLD)) {
+                lateMinutes = minutes - (WORK_START.minutes + LATE_THRESHOLD);
+            } else if (hours > WORK_START.hours) {
+                lateMinutes = (hours - WORK_START.hours) * 60 + minutes - WORK_START.minutes;
+            }
+            
+            // احتساب التأخير ×4
+            return lateMinutes * 4;
+        }
+        
+        // حساب الوقت الإضافي
+        function calculateOvertimeMinutes(timeOut) {
+            const [hours, minutes] = timeOut.split(':').map(Number);
+            
+            // الوقت الإضافي يبدأ بعد 12:00 AM
+            if (hours === WORK_END.hours && minutes > WORK_END.minutes) {
+                return minutes;
+            } else if (hours > WORK_END.hours) {
+                return (hours - WORK_END.hours) * 60 + minutes;
+            }
+            
+            return 0;
+        }
+        
+        // حساب ساعات العمل
+        function calculateWorkHours(timeIn, timeOut) {
+            const [inHours, inMinutes] = timeIn.split(':').map(Number);
+            const [outHours, outMinutes] = timeOut.split(':').map(Number);
+            
+            // تحويل الوقت إلى دقائق
+            const inTotalMinutes = inHours * 60 + inMinutes;
+            let outTotalMinutes = outHours * 60 + outMinutes;
+            
+            // إذا كان وقت الخروج بعد منتصف الليل (تجاوز اليوم)
+            if (outTotalMinutes < inTotalMinutes) {
+                outTotalMinutes += 24 * 60; // إضافة 24 ساعة
+            }
+            
+            // حساب إجمالي الدقائق
+            const totalMinutes = outTotalMinutes - inTotalMinutes;
+            
+            // تحويل الدقائق إلى ساعات
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            
+            return {
+                hours,
+                minutes,
+                totalMinutes
+            };
+        }
+        
+        // تحويل الدقائق إلى أيام (10 ساعات في اليوم)
+        function minutesToDays(minutes) {
+            return minutes / (WORK_HOURS_PER_DAY * 60);
+        }
+        
+        // تحويل الساعات إلى أيام (10 ساعات في اليوم)
+        function hoursToDays(hours) {
+            return hours / WORK_HOURS_PER_DAY;
+        }
+        
+        // إضافة سجل جديد
+        function addAttendanceRecord(event) {
+            event.preventDefault();
+            
+            const date = document.getElementById('date').value;
+            const timeIn = document.getElementById('timeIn').value;
+            const timeOut = document.getElementById('timeOut').value;
+            const isHoliday = document.getElementById('isHoliday').checked;
+            
+            // حساب القيم
+            let workHours;
+            let lateMinutes = 0;
+            let overtimeMinutes = 0;
+            
+            if (isHoliday) {
+                workHours = {
+                    hours: 0,
+                    minutes: 0,
+                    totalMinutes: 0
+                };
+            } else {
+                workHours = calculateWorkHours(timeIn, timeOut);
+                lateMinutes = calculateLateMinutes(timeIn);
+                overtimeMinutes = calculateOvertimeMinutes(timeOut);
+            }
+            
+            // إنشاء السجل
+            const record = {
+                id: Date.now(),
+                date,
+                timeIn,
+                timeOut,
+                workHours: `${workHours.hours}:${workHours.minutes.toString().padStart(2, '0')}`,
+                workHoursTotal: workHours.totalMinutes,
+                lateMinutes,
+                overtimeMinutes,
+                isHoliday
+            };
+            
+            // إضافة السجل إلى المصفوفة
+            attendanceRecords.push(record);
+            
+            // حفظ البيانات وتحديث الواجهة
+            saveRecords();
+            renderRecords();
+            updateStatistics();
+            
+            // إظهار إشعار
+            showNotification('تم إضافة سجل الحضور بنجاح!', true);
+            
+            // إعادة تعيين النموذج
+            attendanceForm.reset();
+            document.getElementById('date').valueAsDate = new Date();
+        }
+        
+        // حذف سجل
+        function deleteRecord(id) {
+            attendanceRecords = attendanceRecords.filter(record => record.id !== id);
+            saveRecords();
+            renderRecords();
+            updateStatistics();
+            showNotification('تم حذف السجل بنجاح!', true);
+        }
+        
+        // حفظ السجلات في localStorage
+        function saveRecords() {
+            localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
+        }
+        
+        // عرض السجلات في الجدول
+        function renderRecords() {
+            // الحصول على قيمة التصفية
+            const selectedMonth = monthFilter.value;
+            
+            // تصفية السجلات
+            let filteredRecords = [...attendanceRecords];
+            if (selectedMonth !== 'all') {
+                filteredRecords = attendanceRecords.filter(record => {
+                    const recordMonth = new Date(record.date).getMonth() + 1;
+                    return recordMonth === parseInt(selectedMonth);
+                });
+            }
+            
+            // ترتيب السجلات من الأحدث إلى الأقدم
+            filteredRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // إنشاء HTML للسجلات
+            let html = '';
+            
+            if (filteredRecords.length === 0) {
+                html = `<tr>
+                    <td colspan="7" class="text-center py-4">
+                        <i class="fas fa-inbox fa-2x mb-3 text-muted"></i>
+                        <p class="text-muted">لا توجد سجلات حضور</p>
+                    </td>
+                </tr>`;
+            } else {
+                filteredRecords.forEach(record => {
+                    const dateObj = new Date(record.date);
+                    const formattedDate = dateObj.toLocaleDateString('ar-EG', {
+                        weekday: 'short',
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                    
+                    html += `
+                        <tr class="${record.isHoliday ? 'holiday' : ''}">
+                            <td>${formattedDate}</td>
+                            <td>${record.timeIn}</td>
+                            <td>${record.timeOut}</td>
+                            <td>${record.workHours}</td>
+                            <td class="${record.lateMinutes > 0 ? 'late' : ''}">
+                                ${record.lateMinutes > 0 ? `${record.lateMinutes} دقيقة` : '--'}
+                            </td>
+                            <td class="${record.overtimeMinutes > 0 ? 'overtime' : ''}">
+                                ${record.overtimeMinutes > 0 ? `${record.overtimeMinutes} دقيقة` : '--'}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" onclick="deleteRecord(${record.id})">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            
+            attendanceRecordsBody.innerHTML = html;
+        }
+        
+        // تحديث الإحصائيات
+        function updateStatistics() {
+            // حساب الإحصائيات الشهرية
+            const currentMonth = new Date().getMonth() + 1;
+            const monthRecords = attendanceRecords.filter(record => {
+                const recordMonth = new Date(record.date).getMonth() + 1;
+                return recordMonth === currentMonth;
+            });
+            
+            // حساب الإجماليات
+            let totalHours = 0;
+            let totalLateMinutes = 0;
+            let totalOvertimeMinutes = 0;
+            let totalHolidays = 0;
+            let totalWorkDays = 0;
+            
+            monthRecords.forEach(record => {
+                if (record.isHoliday) {
+                    totalHolidays++;
+                } else {
+                    totalHours += record.workHoursTotal / 60; // تحويل الدقائق إلى ساعات
+                    totalLateMinutes += record.lateMinutes;
+                    totalOvertimeMinutes += record.overtimeMinutes;
+                    totalWorkDays++;
+                }
+            });
+            
+            // تحويل إلى أيام
+            const totalHoursDays = hoursToDays(totalHours);
+            const totalLateDays = minutesToDays(totalLateMinutes);
+            const totalOvertimeDays = minutesToDays(totalOvertimeMinutes);
+            
+            // حساب النسب
+            const totalDaysInMonth = new Date(new Date().getFullYear(), currentMonth, 0).getDate();
+            const workDays = monthRecords.filter(record => !record.isHoliday).length;
+            const holidaysPercent = Math.round((totalHolidays / monthRecords.length) * 100) || 0;
+            
+            // تحديث واجهة الإحصائيات
+            totalHoursElement.textContent = totalHours.toFixed(1);
+            totalLateElement.textContent = `${totalLateMinutes} دقيقة`;
+            totalOvertimeElement.textContent = `${totalOvertimeMinutes} دقيقة`;
+            totalHolidaysElement.textContent = totalHolidays;
+            totalWorkDaysElement.textContent = totalWorkDays;
+            
+            // تحديث الأيام المكافئة
+            totalHoursDaysElement.textContent = `${totalHoursDays.toFixed(2)} يوم`;
+            totalLateDaysElement.textContent = `${totalLateDays.toFixed(2)} يوم`;
+            totalOvertimeDaysElement.textContent = `${totalOvertimeDays.toFixed(2)} يوم`;
+            
+            // تحديث ملخص الإحصائيات
+            workDaysValueElement.textContent = workDays;
+            lateDaysValueElement.textContent = totalLateDays.toFixed(2);
+            overtimeDaysValueElement.textContent = totalOvertimeDays.toFixed(2);
+            holidaysPercentElement.textContent = `${holidaysPercent}%`;
+            holidaysDaysElement.textContent = `${totalHolidays} يوم`;
+            
+            // تحديث أشرطة التقدم
+            const maxLate = Math.max(1, totalLateDays, totalOvertimeDays);
+            const lateProgress = Math.min(100, (totalLateDays / maxLate) * 100);
+            const overtimeProgress = Math.min(100, (totalOvertimeDays / maxLate) * 100);
+            
+            lateProgressElement.style.width = `${lateProgress}%`;
+            overtimeProgressElement.style.width = `${overtimeProgress}%`;
+            holidaysProgressElement.style.width = `${holidaysPercent}%`;
+        }
+        
+        // تهيئة فلتر الشهور
+        function initMonthFilter() {
+            const months = [
+                'يناير', 'فبراير', 'مارس', 'أبريل', 
+                'مايو', 'يونيو', 'يوليو', 'أغسطس',
+                'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+            ];
+            
+            let options = '';
+            months.forEach((month, index) => {
+                options += `<option value="${index + 1}">${month}</option>`;
+            });
+            
+            monthFilter.innerHTML = '<option value="all">كل الشهور</option>' + options;
+            
+            // تحديد الشهر الحالي
+            const currentMonth = new Date().getMonth() + 1;
+            monthFilter.value = currentMonth;
+        }
+        
+        // تهيئة التطبيق
+        function initApp() {
+            initializeDate();
+            initMonthFilter();
+            renderRecords();
+            updateStatistics();
+            
+            // إضافة مستمعي الأحداث
+            attendanceForm.addEventListener('submit', addAttendanceRecord);
+            monthFilter.addEventListener('change', renderRecords);
+        }
+        
+        // بدء التطبيق عند تحميل الصفحة
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
