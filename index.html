@@ -365,6 +365,32 @@
             border-radius: 15px;
             margin-bottom: 20px;
         }
+        
+        .total-row {
+            font-weight: bold;
+            background-color: #d1ecf1;
+        }
+        
+        .total-row td {
+            font-size: 1.1rem;
+        }
+        
+        .hijri-date {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        
+        .calendar-icon {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #6c757d;
+            pointer-events: none;
+        }
+        
+        .date-input-container {
+            position: relative;
+        }
     </style>
 </head>
 <body>
@@ -470,7 +496,10 @@
                             <div class="row g-3">
                                 <div class="col-md-4">
                                     <label for="date" class="form-label">التاريخ</label>
-                                    <input type="date" class="form-control" id="date" required>
+                                    <div class="date-input-container">
+                                        <input type="date" class="form-control" id="date" required>
+                                        <i class="fas fa-calendar-alt calendar-icon"></i>
+                                    </div>
                                 </div>
                                 <div class="col-md-4">
                                     <label for="timeIn" class="form-label">وقت الدخول</label>
@@ -525,6 +554,9 @@
                                 <tbody id="attendanceRecords">
                                     <!-- سيتم ملئ السجلات عبر الجافاسكريبت -->
                                 </tbody>
+                                <tfoot id="attendanceTotals">
+                                    <!-- سيتم ملئ المجموع الكلي عبر الجافاسكريبت -->
+                                </tfoot>
                             </table>
                         </div>
                     </div>
@@ -609,6 +641,7 @@
         // عناصر DOM
         const attendanceForm = document.getElementById('attendanceForm');
         const attendanceRecordsBody = document.getElementById('attendanceRecords');
+        const attendanceTotalsBody = document.getElementById('attendanceTotals');
         const totalHoursElement = document.getElementById('totalHours');
         const totalLateElement = document.getElementById('totalLate');
         const totalOvertimeElement = document.getElementById('totalOvertime');
@@ -640,6 +673,12 @@
         const LATE_THRESHOLD = 5; // 5 دقائق تأخير مسموحة
         const WORK_HOURS_PER_DAY = 10; // 10 ساعات عمل في اليوم
         
+        // أسماء الأشهر الهجرية
+        const hijriMonths = ['محرم', 'صفر', 'ربيع الأول', 'ربيع الآخر', 'جمادى الأولى', 'جمادى الآخرة', 'رجب', 'شعبان', 'رمضان', 'شوال', 'ذو القعدة', 'ذو الحجة'];
+        
+        // أسماء الأيام
+        const dayNames = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+        
         // تهيئة التاريخ الحالي
         function initializeDate() {
             const now = new Date();
@@ -653,7 +692,6 @@
             currentDateTimeElement.textContent = formattedDate;
             
             // التاريخ الهجري التقريبي
-            const hijriMonths = ['محرم', 'صفر', 'ربيع الأول', 'ربيع الآخر', 'جمادى الأولى', 'جمادى الآخرة', 'رجب', 'شعبان', 'رمضان', 'شوال', 'ذو القعدة', 'ذو الحجة'];
             const hijriYear = Math.floor((now.getFullYear() - 622) * 0.97);
             const hijriMonth = hijriMonths[now.getMonth()];
             const hijriDay = Math.floor(now.getDate() * 0.97);
@@ -678,22 +716,20 @@
             }, 3000);
         }
         
-        // حساب وقت التأخير
+        // حساب وقت التأخير حسب الشروط الجديدة
         function calculateLateMinutes(timeIn) {
             const [hours, minutes] = timeIn.split(':').map(Number);
             
-            // حساب دقائق التأخير بعد 2:05 PM
-            let lateMinutes = 0;
+            // حساب دقائق التأخير بعد 2:00 PM
+            let totalMinutesAfterStart = (hours - WORK_START.hours) * 60 + (minutes - WORK_START.minutes);
             
-            // التأخير يبدأ بعد 2:05 PM
-            if (hours === WORK_START.hours && minutes > (WORK_START.minutes + LATE_THRESHOLD)) {
-                lateMinutes = minutes - (WORK_START.minutes + LATE_THRESHOLD);
-            } else if (hours > WORK_START.hours) {
-                lateMinutes = (hours - WORK_START.hours) * 60 + minutes - WORK_START.minutes;
+            // إذا كان الدخول في 2:05 PM أو قبلها لا يوجد تأخير
+            if (totalMinutesAfterStart <= LATE_THRESHOLD) {
+                return 0;
             }
             
-            // احتساب التأخير ×4
-            return lateMinutes * 4;
+            // إذا كان الدخول بعد 2:05 PM يحسب التأخير ×4 من وقت 2:00 PM
+            return totalMinutesAfterStart * 4;
         }
         
         // حساب الوقت الإضافي
@@ -746,6 +782,22 @@
         // تحويل الساعات إلى أيام (10 ساعات في اليوم)
         function hoursToDays(hours) {
             return hours / WORK_HOURS_PER_DAY;
+        }
+        
+        // الحصول على التاريخ الهجري
+        function getHijriDate(date) {
+            const dateObj = new Date(date);
+            const hijriYear = Math.floor((dateObj.getFullYear() - 622) * 0.97);
+            const hijriMonth = hijriMonths[dateObj.getMonth()];
+            const hijriDay = Math.floor(dateObj.getDate() * 0.97);
+            
+            return `${hijriDay} ${hijriMonth} ${hijriYear} هـ`;
+        }
+        
+        // الحصول على اسم اليوم
+        function getDayName(date) {
+            const dateObj = new Date(date);
+            return dayNames[dateObj.getDay()];
         }
         
         // إضافة سجل جديد
@@ -836,6 +888,9 @@
             
             // إنشاء HTML للسجلات
             let html = '';
+            let totalWorkMinutes = 0;
+            let totalLateMinutes = 0;
+            let totalOvertimeMinutes = 0;
             
             if (filteredRecords.length === 0) {
                 html = `<tr>
@@ -854,9 +909,20 @@
                         day: 'numeric'
                     });
                     
+                    // حساب المجاميع
+                    if (!record.isHoliday) {
+                        totalWorkMinutes += record.workHoursTotal;
+                        totalLateMinutes += record.lateMinutes;
+                        totalOvertimeMinutes += record.overtimeMinutes;
+                    }
+                    
                     html += `
                         <tr class="${record.isHoliday ? 'holiday' : ''}">
-                            <td>${formattedDate}</td>
+                            <td>
+                                <div>${formattedDate}</div>
+                                <div class="hijri-date">${getHijriDate(record.date)}</div>
+                                <div class="hijri-date small">${getDayName(record.date)}</div>
+                            </td>
                             <td>${record.timeIn}</td>
                             <td>${record.timeOut}</td>
                             <td>${record.workHours}</td>
@@ -877,6 +943,35 @@
             }
             
             attendanceRecordsBody.innerHTML = html;
+            
+            // تحديث المجموع الكلي
+            updateTotals(totalWorkMinutes, totalLateMinutes, totalOvertimeMinutes);
+        }
+        
+        // تحديث المجموع الكلي
+        function updateTotals(totalWorkMinutes, totalLateMinutes, totalOvertimeMinutes) {
+            // تحويل ساعات العمل إلى تنسيق ساعات ودقائق
+            const totalWorkHours = Math.floor(totalWorkMinutes / 60);
+            const totalWorkMins = totalWorkMinutes % 60;
+            const totalWorkStr = `${totalWorkHours}:${totalWorkMins.toString().padStart(2, '0')}`;
+            
+            let html = '';
+            
+            if (attendanceRecords.length > 0) {
+                html = `
+                    <tr class="total-row">
+                        <td>المجموع الكلي</td>
+                        <td></td>
+                        <td></td>
+                        <td>${totalWorkStr}</td>
+                        <td>${totalLateMinutes} دقيقة</td>
+                        <td>${totalOvertimeMinutes} دقيقة</td>
+                        <td></td>
+                    </tr>
+                `;
+            }
+            
+            attendanceTotalsBody.innerHTML = html;
         }
         
         // تحديث الإحصائيات
@@ -948,9 +1043,9 @@
         // تهيئة فلتر الشهور
         function initMonthFilter() {
             const months = [
-                'يناير', 'فبراير', 'مارس', 'أبريل', 
-                'مايو', 'يونيو', 'يوليو', 'أغسطس',
-                'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+                'شهر الاول', 'شهر الثاني', 'شهر الثالث', 'شهر الرابع', 
+                'شهر الخامس', 'شهر السادس', 'شهر السابع', 'شهر الثامن',
+                'شهر التاسع', 'شهر العاشر', 'شهر الهدعش', 'شهر الثنعش'
             ];
             
             let options = '';
