@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ادارة بصمة الدخول والخروج</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>نظام إدارة بصمة الدخول والخروج</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -15,6 +15,7 @@
             --dark-color: #2c3e50;
             --success-color: #2ecc71;
             --warning-color: #f39c12;
+            --purple-color: #9b59b6;
         }
         
         body {
@@ -391,11 +392,53 @@
         .date-input-container {
             position: relative;
         }
+        
+        /* بطاقة النتيجة النهائية الجديدة */
+        .net-result-card {
+            background: linear-gradient(135deg, var(--purple-color), #8e44ad);
+            color: white;
+        }
+        
+        .net-result-card h4 {
+            color: white;
+        }
+        
+        .net-result-card .value {
+            color: white;
+            font-size: 2.2rem;
+        }
+        
+        .net-result-card .days {
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, #1abc9c, #16a085);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        
+        .highlight-box h4 {
+            border-bottom: 2px dashed rgba(255,255,255,0.3);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .formula {
+            font-family: 'Courier New', monospace;
+            background: rgba(0,0,0,0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
     <!-- إشعارات -->
-    <div id="notification" class="notification"></div>
+    <div id="notification" class="notification success">تم إضافة سجل الحضور بنجاح!</div>
     
     <!-- الرأس -->
     <header class="header">
@@ -408,11 +451,11 @@
                     </div>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <div id="currentDateTime" class="h5 mb-0"></div>
+                    <div id="currentDateTime" class="h5 mb-0">الأحد، ١٣ يوليو ٢٠٢٥</div>
                     <div class="mt-1">
                         <span class="badge bg-light text-dark">
                             <i class="fas fa-calendar-alt me-2"></i>
-                            <span id="hijriDate"></span>
+                            <span id="hijriDate">12 رجب 1360 هـ</span>
                         </span>
                     </div>
                 </div>
@@ -429,31 +472,31 @@
                     <div class="col-md-6 col-lg-12">
                         <div class="stat-card" style="background: linear-gradient(135deg, #3498db, #2c3e50);">
                             <i class="fas fa-clock"></i>
-                            <h3 id="totalHours">0</h3>
+                            <h3 id="totalHours">112.1</h3>
                             <p>إجمالي ساعات العمل</p>
-                            <div class="days" id="totalHoursDays">0 يوم</div>
+                            <div class="days" id="totalHoursDays">11.21 يوم</div>
                         </div>
                     </div>
                     <div class="col-md-6 col-lg-12">
                         <div class="stat-card" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
                             <i class="fas fa-exclamation-triangle"></i>
-                            <h3 id="totalLate">0</h3>
+                            <h3 id="totalLate">28 دقيقة</h3>
                             <p>إجمالي التأخير (×4)</p>
-                            <div class="days" id="totalLateDays">0 يوم</div>
+                            <div class="days" id="totalLateDays">0.05 يوم</div>
                         </div>
                     </div>
                     <div class="col-md-6 col-lg-12">
                         <div class="stat-card" style="background: linear-gradient(135deg, #2ecc71, #27ae60);">
                             <i class="fas fa-plus-circle"></i>
-                            <h3 id="totalOvertime">0</h3>
+                            <h3 id="totalOvertime">135 دقيقة</h3>
                             <p>إجمالي الوقت الإضافي</p>
-                            <div class="days" id="totalOvertimeDays">0 يوم</div>
+                            <div class="days" id="totalOvertimeDays">0.23 يوم</div>
                         </div>
                     </div>
                     <div class="col-md-6 col-lg-12">
                         <div class="stat-card" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
                             <i class="fas fa-umbrella-beach"></i>
-                            <h3 id="totalHolidays">0</h3>
+                            <h3 id="totalHolidays">1</h3>
                             <p>إجمالي أيام الإجازة</p>
                         </div>
                     </div>
@@ -479,7 +522,7 @@
                         <i class="fas fa-calendar-check me-2"></i>إجمالي أيام العمل
                     </div>
                     <div class="card-body text-center">
-                        <h1 class="display-4" id="totalWorkDays">0</h1>
+                        <h1 class="display-4" id="totalWorkDays">11</h1>
                         <p class="mb-0">يوم عمل خلال الشهر</p>
                     </div>
                 </div>
@@ -497,17 +540,17 @@
                                 <div class="col-md-4">
                                     <label for="date" class="form-label">التاريخ</label>
                                     <div class="date-input-container">
-                                        <input type="date" class="form-control" id="date" required>
+                                        <input type="date" class="form-control" id="date" required="">
                                         <i class="fas fa-calendar-alt calendar-icon"></i>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <label for="timeIn" class="form-label">وقت الدخول</label>
-                                    <input type="time" class="form-control" id="timeIn" required>
+                                    <input type="time" class="form-control" id="timeIn" required="">
                                 </div>
                                 <div class="col-md-4">
                                     <label for="timeOut" class="form-label">وقت الخروج</label>
-                                    <input type="time" class="form-control" id="timeOut" required>
+                                    <input type="time" class="form-control" id="timeOut" required="">
                                 </div>
                                 <div class="col-md-12">
                                     <div class="form-check mb-3">
@@ -531,10 +574,7 @@
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <span><i class="fas fa-history me-2"></i>سجلات الحضور</span>
                         <div>
-                            <select id="monthFilter" class="form-select form-select-sm">
-                                <option value="all">كل الشهور</option>
-                                <!-- سيتم ملئ الخيارات عبر الجافاسكريبت -->
-                            </select>
+                            <select id="monthFilter" class="form-select form-select-sm"><option value="all">كل الشهور</option><option value="1">شهر الاول</option><option value="2">شهر الثاني</option><option value="3">شهر الثالث</option><option value="4">شهر الرابع</option><option value="5">شهر الخامس</option><option value="6">شهر السادس</option><option value="7">شهر السابع</option><option value="8">شهر الثامن</option><option value="9">شهر التاسع</option><option value="10">شهر العاشر</option><option value="11">شهر الهدعش</option><option value="12">شهر الثنعش</option></select>
                         </div>
                     </div>
                     <div class="card-body">
@@ -552,11 +592,281 @@
                                     </tr>
                                 </thead>
                                 <tbody id="attendanceRecords">
-                                    <!-- سيتم ملئ السجلات عبر الجافاسكريبت -->
-                                </tbody>
+                        <tr class="">
+                            <td>
+                                <div>السبت، ١٢ يوليو ٢٠٢٥</div>
+                                <div class="hijri-date">11 رجب 1360 هـ</div>
+                                <div class="hijri-date small">السبت</div>
+                            </td>
+                            <td>14:00</td>
+                            <td>00:48</td>
+                            <td>10:48</td>
+                            <td class="">
+                                --
+                            </td>
+                            <td class="overtime">
+                                48 دقيقة
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" onclick="deleteRecord(1752405730828)">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    
+                        <tr class="">
+                            <td>
+                                <div>الجمعة، ١١ يوليو ٢٠٢٥</div>
+                                <div class="hijri-date">10 رجب 1360 هـ</div>
+                                <div class="hijri-date small">الجمعة</div>
+                            </td>
+                            <td>14:00</td>
+                            <td>00:00</td>
+                            <td>10:00</td>
+                            <td class="">
+                                --
+                            </td>
+                            <td class="">
+                                --
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" onclick="deleteRecord(1752323475249)">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    
+                        <tr class="">
+                            <td>
+                                <div>الخميس، ١٠ يوليو ٢٠٢٥</div>
+                                <div class="hijri-date">9 رجب 1360 هـ</div>
+                                <div class="hijri-date small">الخميس</div>
+                            </td>
+                            <td>14:00</td>
+                            <td>00:11</td>
+                            <td>10:11</td>
+                            <td class="">
+                                --
+                            </td>
+                            <td class="overtime">
+                                11 دقيقة
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" onclick="deleteRecord(1752221348601)">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    
+                        <tr class="">
+                            <td>
+                                <div>الأربعاء، ٩ يوليو ٢٠٢٥</div>
+                                <div class="hijri-date">8 رجب 1360 هـ</div>
+                                <div class="hijri-date small">الأربعاء</div>
+                            </td>
+                            <td>14:00</td>
+                            <td>00:14</td>
+                            <td>10:14</td>
+                            <td class="">
+                                --
+                            </td>
+                            <td class="overtime">
+                                14 دقيقة
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" onclick="deleteRecord(1752146035005)">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    
+                        <tr class="">
+                            <td>
+                                <div>الثلاثاء، ٨ يوليو ٢٠٢٥</div>
+                                <div class="hijri-date">7 رجب 1360 هـ</div>
+                                <div class="hijri-date small">الثلاثاء</div>
+                            </td>
+                            <td>14:00</td>
+                            <td>00:24</td>
+                            <td>10:24</td>
+                            <td class="">
+                                --
+                            </td>
+                            <td class="overtime">
+                                24 دقيقة
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" onclick="deleteRecord(1752146001869)">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    
+                        <tr class="holiday">
+                            <td>
+                                <div>الاثنين، ٧ يوليو ٢٠٢٥</div>
+                                <div class="hijri-date">6 رجب 1360 هـ</div>
+                                <div class="hijri-date small">الاثنين</div>
+                            </td>
+                            <td>14:00</td>
+                            <td>00:00</td>
+                            <td>0:00</td>
+                            <td class="">
+                                --
+                            </td>
+                            <td class="">
+                                --
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" onclick="deleteRecord(1752145962606)">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    
+                        <tr class="">
+                            <td>
+                                <div>الأحد، ٦ يوليو ٢٠٢٥</div>
+                                <div class="hijri-date">5 رجب 1360 هـ</div>
+                                <div class="hijri-date small">الأحد</div>
+                            </td>
+                            <td>14:00</td>
+                            <td>00:00</td>
+                            <td>10:00</td>
+                            <td class="">
+                                --
+                            </td>
+                            <td class="">
+                                --
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" onclick="deleteRecord(1752145947726)">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    
+                        <tr class="">
+                            <td>
+                                <div>السبت، ٥ يوليو ٢٠٢٥</div>
+                                <div class="hijri-date">4 رجب 1360 هـ</div>
+                                <div class="hijri-date small">السبت</div>
+                            </td>
+                            <td>14:00</td>
+                            <td>00:00</td>
+                            <td>10:00</td>
+                            <td class="">
+                                --
+                            </td>
+                            <td class="">
+                                --
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" onclick="deleteRecord(1751810094996)">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    
+                        <tr class="">
+                            <td>
+                                <div>الجمعة، ٤ يوليو ٢٠٢٥</div>
+                                <div class="hijri-date">3 رجب 1360 هـ</div>
+                                <div class="hijri-date small">الجمعة</div>
+                            </td>
+                            <td>14:00</td>
+                            <td>00:00</td>
+                            <td>10:00</td>
+                            <td class="">
+                                --
+                            </td>
+                            <td class="">
+                                --
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" onclick="deleteRecord(1751717171372)">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    
+                        <tr class="">
+                            <td>
+                                <div>الخميس، ٣ يوليو ٢٠٢٥</div>
+                                <div class="hijri-date">2 رجب 1360 هـ</div>
+                                <div class="hijri-date small">الخميس</div>
+                            </td>
+                            <td>14:07</td>
+                            <td>00:13</td>
+                            <td>10:06</td>
+                            <td class="late">
+                                28 دقيقة
+                            </td>
+                            <td class="overtime">
+                                13 دقيقة
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" onclick="deleteRecord(1752229818591)">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    
+                        <tr class="">
+                            <td>
+                                <div>الأربعاء، ٢ يوليو ٢٠٢٥</div>
+                                <div class="hijri-date">1 رجب 1360 هـ</div>
+                                <div class="hijri-date small">الأربعاء</div>
+                            </td>
+                            <td>14:00</td>
+                            <td>00:00</td>
+                            <td>10:00</td>
+                            <td class="">
+                                --
+                            </td>
+                            <td class="">
+                                --
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" onclick="deleteRecord(1751489620987)">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    
+                        <tr class="">
+                            <td>
+                                <div>الثلاثاء، ١ يوليو ٢٠٢٥</div>
+                                <div class="hijri-date">0 رجب 1360 هـ</div>
+                                <div class="hijri-date small">الثلاثاء</div>
+                            </td>
+                            <td>14:04</td>
+                            <td>00:25</td>
+                            <td>10:21</td>
+                            <td class="">
+                                --
+                            </td>
+                            <td class="overtime">
+                                25 دقيقة
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" onclick="deleteRecord(1751489586078)">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
                                 <tfoot id="attendanceTotals">
-                                    <!-- سيتم ملئ المجموع الكلي عبر الجافاسكريبت -->
-                                </tfoot>
+                    <tr class="total-row">
+                        <td>المجموع الكلي</td>
+                        <td></td>
+                        <td></td>
+                        <td>112:04</td>
+                        <td>28 دقيقة</td>
+                        <td>135 دقيقة</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
                             </table>
                         </div>
                     </div>
@@ -570,42 +880,64 @@
                 <div class="summary-grid">
                     <div class="summary-card">
                         <h4>أيام العمل الفعلية</h4>
-                        <div class="value" id="workDaysValue">0</div>
+                        <div class="value" id="workDaysValue">11</div>
                         <div class="days">يوم عمل</div>
                     </div>
                     
                     <div class="summary-card">
                         <h4>إجمالي التأخير</h4>
-                        <div class="value" id="lateDaysValue">0</div>
+                        <div class="value" id="lateDaysValue">0.05</div>
                         <div class="days">يوم (مكافيء)</div>
                         <div class="progress-container">
                             <div class="progress">
-                                <div class="progress-bar bg-danger" id="lateProgress" style="width: 0%"></div>
+                                <div class="progress-bar bg-danger" id="lateProgress" style="width: 4.66667%;"></div>
                             </div>
                         </div>
                     </div>
                     
                     <div class="summary-card">
                         <h4>إجمالي الوقت الإضافي</h4>
-                        <div class="value" id="overtimeDaysValue">0</div>
+                        <div class="value" id="overtimeDaysValue">0.23</div>
                         <div class="days">يوم (مكافيء)</div>
                         <div class="progress-container">
                             <div class="progress">
-                                <div class="progress-bar bg-success" id="overtimeProgress" style="width: 0%"></div>
+                                <div class="progress-bar bg-success" id="overtimeProgress" style="width: 22.5%;"></div>
                             </div>
                         </div>
                     </div>
                     
                     <div class="summary-card">
                         <h4>نسبة الإجازات</h4>
-                        <div class="value" id="holidaysPercent">0%</div>
-                        <div class="days" id="holidaysDays">0 يوم</div>
+                        <div class="value" id="holidaysPercent">8%</div>
+                        <div class="days" id="holidaysDays">1 يوم</div>
                         <div class="progress-container">
                             <div class="progress">
-                                <div class="progress-bar bg-warning" id="holidaysProgress" style="width: 0%"></div>
+                                <div class="progress-bar bg-warning" id="holidaysProgress" style="width: 8%;"></div>
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- بطاقة النتيجة النهائية المضافة -->
+                    <div class="summary-card net-result-card">
+                        <h4>النتيجة النهائية</h4>
+                        <div class="value" id="netResultValue">11.18</div>
+                        <div class="days">يوم مكافئ</div>
+                        <div class="progress-container">
+                            <div class="progress">
+                                <div class="progress-bar bg-light" id="netResultProgress" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- شرح النتيجة النهائية -->
+                <div class="highlight-box">
+                    <h4><i class="fas fa-calculator me-2"></i>كيفية حساب النتيجة النهائية</h4>
+                    <p>النتيجة النهائية = (أيام العمل الفعلية) + (الوقت الإضافي بالأيام) - (التأخير بالأيام)</p>
+                    <div class="formula">
+                        النتيجة النهائية = <span id="workDaysFormula">11</span> + <span id="overtimeDaysFormula">0.23</span> - <span id="lateDaysFormula">0.05</span> = <span id="netResultFormula">11.18</span> يوم
+                    </div>
+                    <p class="mb-0">حيث أن التأخير محسوب بالفعل مضروباً في 4 حسب نظام الشركة</p>
                 </div>
             </div>
         </div>
@@ -620,7 +952,7 @@
                     <p>نظام ادارة سجلات حضور وانصراف الموظف علي طه</p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <p>جميع الحقوق محفوطة | علي طه | &copy; <span id="currentYear"></span></p>
+                    <p>جميع الحقوق محفوطة | علي طه | © <span id="currentYear">2025</span></p>
                     <div class="mt-2">
                         <button class="btn btn-sm btn-outline-light me-2">
                             <i class="fas fa-download me-1"></i>تصدير البيانات
@@ -666,6 +998,16 @@
         const lateProgressElement = document.getElementById('lateProgress');
         const overtimeProgressElement = document.getElementById('overtimeProgress');
         const holidaysProgressElement = document.getElementById('holidaysProgress');
+        
+        // عناصر النتيجة النهائية
+        const netResultValueElement = document.getElementById('netResultValue');
+        const netResultProgressElement = document.getElementById('netResultProgress');
+        
+        // عناصر صيغة الحساب
+        const workDaysFormulaElement = document.getElementById('workDaysFormula');
+        const overtimeDaysFormulaElement = document.getElementById('overtimeDaysFormula');
+        const lateDaysFormulaElement = document.getElementById('lateDaysFormula');
+        const netResultFormulaElement = document.getElementById('netResultFormula');
         
         // أوقات الدوام
         const WORK_START = { hours: 14, minutes: 0 }; // 2:00 PM
@@ -1006,6 +1348,9 @@
             const totalLateDays = minutesToDays(totalLateMinutes);
             const totalOvertimeDays = minutesToDays(totalOvertimeMinutes);
             
+            // حساب النتيجة النهائية: أيام العمل + الوقت الإضافي - التأخير
+            const netResult = totalWorkDays + totalOvertimeDays - totalLateDays;
+            
             // حساب النسب
             const totalDaysInMonth = new Date(new Date().getFullYear(), currentMonth, 0).getDate();
             const workDays = monthRecords.filter(record => !record.isHoliday).length;
@@ -1030,6 +1375,9 @@
             holidaysPercentElement.textContent = `${holidaysPercent}%`;
             holidaysDaysElement.textContent = `${totalHolidays} يوم`;
             
+            // تحديث النتيجة النهائية
+            netResultValueElement.textContent = netResult.toFixed(2);
+            
             // تحديث أشرطة التقدم
             const maxLate = Math.max(1, totalLateDays, totalOvertimeDays);
             const lateProgress = Math.min(100, (totalLateDays / maxLate) * 100);
@@ -1038,6 +1386,16 @@
             lateProgressElement.style.width = `${lateProgress}%`;
             overtimeProgressElement.style.width = `${overtimeProgress}%`;
             holidaysProgressElement.style.width = `${holidaysPercent}%`;
+            
+            // تحديث صيغة الحساب
+            workDaysFormulaElement.textContent = totalWorkDays;
+            overtimeDaysFormulaElement.textContent = totalOvertimeDays.toFixed(2);
+            lateDaysFormulaElement.textContent = totalLateDays.toFixed(2);
+            netResultFormulaElement.textContent = netResult.toFixed(2);
+            
+            // تحديث شريط النتيجة النهائية
+            const netResultProgress = Math.min(100, (netResult / totalWorkDays) * 100);
+            netResultProgressElement.style.width = `${netResultProgress}%`;
         }
         
         // تهيئة فلتر الشهور
